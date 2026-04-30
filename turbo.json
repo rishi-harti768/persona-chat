@@ -5,7 +5,7 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["dist/**", ".next/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -25,7 +25,7 @@
     },
     "db:migrate": {
       "cache": false,
-      "persistent": true
+      "persistent": false
     },
     "db:studio": {
       "cache": false,

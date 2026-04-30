@@ -5,42 +5,48 @@ import { RPCHandler } from "@orpc/server/fetch";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { createContext } from "@persona-chat/api/context";
 import { appRouter } from "@persona-chat/api/routers/index";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
 const rpcHandler = new RPCHandler(appRouter, {
-  interceptors: [
-    onError((error) => {
-      console.error(error);
-    }),
-  ],
+	interceptors: [
+		onError((error) => {
+			console.error(error);
+		}),
+	],
 });
 const apiHandler = new OpenAPIHandler(appRouter, {
-  plugins: [
-    new OpenAPIReferencePlugin({
-      schemaConverters: [new ZodToJsonSchemaConverter()],
-    }),
-  ],
-  interceptors: [
-    onError((error) => {
-      console.error(error);
-    }),
-  ],
+	plugins: [
+		new OpenAPIReferencePlugin({
+			schemaConverters: [new ZodToJsonSchemaConverter()],
+		}),
+	],
+	interceptors: [
+		onError((error) => {
+			console.error(error);
+		}),
+	],
 });
 
 async function handleRequest(req: NextRequest) {
-  const rpcResult = await rpcHandler.handle(req, {
-    prefix: "/api/rpc",
-    context: await createContext(req),
-  });
-  if (rpcResult.response) return rpcResult.response;
+	const context = createContext();
 
-  const apiResult = await apiHandler.handle(req, {
-    prefix: "/api/rpc/api-reference",
-    context: await createContext(req),
-  });
-  if (apiResult.response) return apiResult.response;
+	const rpcResult = await rpcHandler.handle(req, {
+		prefix: "/api/rpc",
+		context,
+	});
+	if (rpcResult.response) {
+		return rpcResult.response;
+	}
 
-  return new Response("Not found", { status: 404 });
+	const apiResult = await apiHandler.handle(req, {
+		prefix: "/api/rpc/api-reference",
+		context,
+	});
+	if (apiResult.response) {
+		return apiResult.response;
+	}
+
+	return new Response("Not found", { status: 404 });
 }
 
 export const GET = handleRequest;

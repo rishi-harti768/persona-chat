@@ -1,9 +1,10 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { DefaultChatTransport, type UIMessage } from "ai";
 import { Square } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { Streamdown } from "streamdown";
 import type { PersonaDefinition, PersonaState } from "@/lib/personas";
 import { getSuggestionsForPersona } from "@/lib/suggestions";
 import {
@@ -26,6 +27,8 @@ import { Suggestion, Suggestions } from "./ai-elements/suggestion";
 
 function getPersonaState(status: PromptInputStatus): PersonaState {
 	switch (status) {
+		case "ready":
+			return "listening";
 		case "submitted":
 			return "thinking";
 		case "streaming":
@@ -55,6 +58,216 @@ function getErrorMessage(error: Error | undefined) {
 	);
 }
 
+function getStatusLabel(status: PromptInputStatus) {
+	switch (status) {
+		case "ready":
+			return "Ready";
+		case "submitted":
+			return "Sending";
+		case "streaming":
+			return "Responding";
+		default:
+			return "Error";
+	}
+}
+
+function getStatusBadgeClasses(status: PromptInputStatus) {
+	switch (status) {
+		case "ready":
+			return "border-emerald-500/20 bg-emerald-500/10 text-emerald-600";
+		case "submitted":
+			return "border-amber-500/20 bg-amber-500/10 text-amber-600";
+		case "streaming":
+			return "border-blue-500/20 bg-blue-500/10 text-blue-600";
+		default:
+			return "border-destructive/20 bg-destructive/10 text-destructive";
+	}
+}
+
+function getStatusDotClasses(status: PromptInputStatus) {
+	switch (status) {
+		case "ready":
+			return "bg-emerald-500";
+		case "submitted":
+			return "bg-amber-500";
+		case "streaming":
+			return "bg-blue-500";
+		default:
+			return "bg-destructive";
+	}
+}
+
+function StatusBadge({ status }: { status: PromptInputStatus }) {
+	return (
+		<span
+			className={`hidden items-center gap-2 rounded-full border px-3 py-1 text-sm sm:inline-flex ${getStatusBadgeClasses(status)}`}
+		>
+			<span className={`size-2 rounded-full ${getStatusDotClasses(status)}`} />
+			{getStatusLabel(status)}
+		</span>
+	);
+}
+
+function ChatMessage({
+	message,
+	isStreaming,
+}: {
+	message: UIMessage;
+	isStreaming: boolean;
+}) {
+	return (
+		<Message from={message.role === "user" ? "user" : "assistant"}>
+			<MessageContent>
+				{message.parts.map((part, index) => {
+					if (part.type !== "text") {
+						return null;
+					}
+
+					return (
+						<MessageResponse key={`${message.id}-${index}`}>
+							{message.role === "assistant" ? (
+								<Streamdown
+									isAnimating={isStreaming}
+									mode={isStreaming ? "streaming" : "static"}
+								>
+									{part.text}
+								</Streamdown>
+							) : (
+								part.text
+							)}
+						</MessageResponse>
+					);
+				})}
+			</MessageContent>
+		</Message>
+	);
+}
+
+function ChatMessages({
+	messages,
+	isStreaming,
+	isBusy,
+	errorMessage,
+	suggestions,
+	onSuggestionClick,
+}: {
+	messages: ReturnType<typeof useChat>["messages"];
+	isStreaming: boolean;
+	isBusy: boolean;
+	errorMessage: string | null;
+	suggestions: readonly string[];
+	onSuggestionClick: (text: string) => void;
+}) {
+	const hasMessages = messages.length > 0;
+
+	return (
+		<Conversation className="h-full min-h-0">
+			<ConversationContent messageCount={messages.length}>
+				{errorMessage ? (
+					<div
+						className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-destructive text-sm"
+						role="alert"
+					>
+						{errorMessage}
+					</div>
+				) : null}
+
+				{hasMessages ? null : (
+					<div className="rounded-2xl border border-border border-dashed bg-muted/20 px-4 py-8 text-center text-muted-foreground text-sm">
+						Start with one of the suggestions below or ask your own question.
+					</div>
+				)}
+
+				{messages.map((message) => (
+					<ChatMessage
+						isStreaming={isStreaming}
+						key={message.id}
+						message={message}
+					/>
+				))}
+
+				{hasMessages ? null : (
+					<div className="space-y-3">
+						<div className="font-medium text-sm">Quick starts</div>
+						<Suggestions>
+							{suggestions.map((suggestion) => (
+								<Suggestion
+									key={suggestion}
+									onClick={(text) => {
+										if (isBusy) {
+											return;
+										}
+
+										onSuggestionClick(text);
+									}}
+									suggestion={suggestion}
+								/>
+							))}
+						</Suggestions>
+					</div>
+				)}
+			</ConversationContent>
+			<ConversationScrollButton />
+		</Conversation>
+	);
+}
+
+function ChatComposer({
+	isBusy,
+	input,
+	personaName,
+	onChange,
+	onSubmit,
+}: {
+	isBusy: boolean;
+	input: string;
+	personaName: string;
+	onChange: (value: string) => void;
+	onSubmit: () => void;
+}) {
+	return (
+		<PromptInput
+			onSubmit={(event) => {
+				event.preventDefault();
+				onSubmit();
+			}}
+		>
+			<PromptInputTextarea
+				autoComplete="off"
+				autoFocus
+				disabled={isBusy}
+				name="prompt"
+				onChange={(event) => onChange(event.target.value)}
+				onKeyDown={(event) => {
+					if (
+						event.key !== "Enter" ||
+						event.shiftKey ||
+						event.nativeEvent.isComposing
+					) {
+						return;
+					}
+
+					event.preventDefault();
+					event.currentTarget.form?.requestSubmit();
+				}}
+				placeholder={`Ask ${personaName} anything...`}
+				value={input}
+			/>
+			<div className="flex items-center justify-between gap-3">
+				<p className="text-muted-foreground text-xs">
+					{isBusy
+						? "Waiting for a response..."
+						: "Press Enter to send, Shift+Enter for a new line."}
+				</p>
+				<PromptInputSubmit
+					disabled={isBusy}
+					status={isBusy ? "submitted" : "ready"}
+				/>
+			</div>
+		</PromptInput>
+	);
+}
+
 export function ChatInterface({
 	persona,
 	onStatusChange,
@@ -78,19 +291,17 @@ export function ChatInterface({
 		transport,
 	});
 
-	const currentState = getPersonaState(status);
-
 	useEffect(() => {
-		onStatusChange(currentState);
-	}, [currentState, onStatusChange]);
+		onStatusChange(getPersonaState(status));
+	}, [onStatusChange, status]);
 
 	const suggestions = getSuggestionsForPersona(persona.id);
 	const errorMessage = getErrorMessage(error);
 	const isBusy = status === "submitted" || status === "streaming";
-	const hasMessages = messages.length > 0;
+	const isStreaming = status === "streaming";
 
 	return (
-		<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border bg-card shadow-sm">
+		<div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border bg-card shadow-sm">
 			<div className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-6">
 				<div>
 					<div className="font-semibold text-base">{persona.name}</div>
@@ -99,9 +310,7 @@ export function ChatInterface({
 					</div>
 				</div>
 				<div className="flex items-center gap-2">
-					<span className="hidden text-muted-foreground text-sm sm:inline">
-						{status}
-					</span>
+					<StatusBadge status={status} />
 					{isBusy ? (
 						<button
 							className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-sm transition-colors hover:bg-muted"
@@ -118,74 +327,24 @@ export function ChatInterface({
 			</div>
 
 			<div className="min-h-0 flex-1 overflow-hidden">
-				<Conversation className="h-full min-h-0">
-					<ConversationContent messageCount={messages.length}>
-						{errorMessage ? (
-							<div
-								className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-destructive text-sm"
-								role="alert"
-							>
-								{errorMessage}
-							</div>
-						) : null}
-
-						{hasMessages ? null : (
-							<div className="rounded-2xl border border-border border-dashed bg-muted/20 px-4 py-8 text-center text-muted-foreground text-sm">
-								Start with one of the suggestions below or ask your own
-								question.
-							</div>
-						)}
-
-						{messages.map((message) => (
-							<Message
-								from={message.role === "user" ? "user" : "assistant"}
-								key={message.id}
-							>
-								<MessageContent>
-									{message.parts.map((part, index) => {
-										if (part.type !== "text") {
-											return null;
-										}
-
-										return (
-											<MessageResponse key={`${message.id}-${index}`}>
-												{part.text}
-											</MessageResponse>
-										);
-									})}
-								</MessageContent>
-							</Message>
-						))}
-
-						{hasMessages ? null : (
-							<div className="space-y-3">
-								<div className="font-medium text-sm">Quick starts</div>
-								<Suggestions>
-									{suggestions.map((suggestion) => (
-										<Suggestion
-											key={suggestion}
-											onClick={(text) => {
-												if (isBusy) {
-													return;
-												}
-
-												sendMessage({ text }).catch(() => undefined);
-												setInput("");
-											}}
-											suggestion={suggestion}
-										/>
-									))}
-								</Suggestions>
-							</div>
-						)}
-					</ConversationContent>
-					<ConversationScrollButton />
-				</Conversation>
+				<ChatMessages
+					errorMessage={errorMessage}
+					isBusy={isBusy}
+					isStreaming={isStreaming}
+					messages={messages}
+					onSuggestionClick={(text) => {
+						sendMessage({ text }).catch(() => undefined);
+						setInput("");
+					}}
+					suggestions={suggestions}
+				/>
 			</div>
 
-			<PromptInput
-				onSubmit={(event) => {
-					event.preventDefault();
+			<ChatComposer
+				input={input}
+				isBusy={isBusy}
+				onChange={setInput}
+				onSubmit={() => {
 					const text = input.trim();
 					if (!text || isBusy) {
 						return;
@@ -194,25 +353,8 @@ export function ChatInterface({
 					sendMessage({ text }).catch(() => undefined);
 					setInput("");
 				}}
-			>
-				<PromptInputTextarea
-					autoComplete="off"
-					autoFocus
-					disabled={isBusy}
-					name="prompt"
-					onChange={(event) => setInput(event.target.value)}
-					placeholder={`Ask ${persona.name} anything...`}
-					value={input}
-				/>
-				<div className="flex items-center justify-between gap-3">
-					<p className="text-muted-foreground text-xs">
-						{isBusy
-							? "Waiting for a response..."
-							: "Press Enter to send, Shift+Enter for a new line."}
-					</p>
-					<PromptInputSubmit disabled={isBusy} status={status} />
-				</div>
-			</PromptInput>
+				personaName={persona.name}
+			/>
 		</div>
 	);
 }

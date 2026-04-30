@@ -48,7 +48,8 @@ export function Persona({
 					"flex size-12 items-center justify-center rounded-full bg-gradient-to-br text-white shadow-inner",
 					variantClasses[variant],
 					state === "speaking" && "scale-105",
-					state === "thinking" && "animate-pulse"
+					state === "thinking" && "animate-pulse",
+					state === "listening" && "animate-pulse"
 				)}
 			>
 				<div className="size-4 rounded-full bg-white/90" />

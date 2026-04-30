@@ -35,9 +35,11 @@ export default function RootLayout({
 					Skip to content
 				</a>
 				<Providers>
-					<div className="grid min-h-svh grid-rows-[auto_1fr]">
+					<div className="grid h-svh grid-rows-[auto_1fr] overflow-hidden">
 						<Header />
-						<main id="content">{children}</main>
+						<main className="min-h-0 overflow-hidden" id="content">
+							{children}
+						</main>
 					</div>
 				</Providers>
 			</body>

@@ -8,10 +8,7 @@ import { ModeToggle } from "./mode-toggle";
 
 export default function Header() {
 	const pathname = usePathname();
-	const links = [
-		{ to: "/", label: "Persona Chat" },
-		{ to: "/ai", label: "AI Chat" },
-	] as const;
+	const links = [{ to: "/", label: "Persona Chat" }] as const;
 
 	return (
 		<header>

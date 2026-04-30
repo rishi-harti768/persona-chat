@@ -45,7 +45,7 @@ export function Conversation({
 		<ConversationContext.Provider value={{ scrollToBottom }}>
 			<div className={cn("relative flex min-h-0 flex-1 flex-col", className)}>
 				<div
-					className="scrollbar-thin min-h-0 flex-1 overflow-y-auto scroll-smooth"
+					className="scrollbar-thin min-h-0 flex-1 overflow-y-auto overscroll-contain scroll-smooth"
 					ref={viewportRef}
 				>
 					{children}
@@ -110,7 +110,10 @@ export function ConversationScrollButton({
 	return (
 		<Button
 			aria-label="Scroll to latest message"
-			className={cn("absolute right-4 bottom-4 shadow-sm", className)}
+			className={cn(
+				"absolute right-4 bottom-4 rounded-full shadow-sm",
+				className
+			)}
 			onClick={context.scrollToBottom}
 			size="icon-sm"
 			variant="outline"

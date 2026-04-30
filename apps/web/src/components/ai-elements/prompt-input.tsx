@@ -88,7 +88,7 @@ export function PromptInputSubmit({
 	return (
 		<Button
 			aria-label={isBusy ? "Thinking" : "Send message"}
-			className={cn("self-end", className)}
+			className={cn("self-end rounded-full px-4", className)}
 			disabled={isBusy || disabled}
 			size="sm"
 			type="submit"

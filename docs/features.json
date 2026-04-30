@@ -1,0 +1,134 @@
+{
+  "project": "Persona-Based AI Chatbot",
+  "version": "1.0.0",
+  "description": "MVP prototype for persona-based AI chatbot with three Scaler personalities",
+  "features": [
+    {
+      "id": "F1",
+      "name": "Persona System Prompts",
+      "description": "Create distinct system prompts for each of the three personas with persona description, few-shot examples, CoT instruction, output format, and constraints",
+      "priority": "critical",
+      "type": "backend",
+      "tasks": [
+        "Research Anshuman Singh, Abhimanyu Saxena, and Kshitij Mishra personas",
+        "Write system prompt for Anshuman Singh with all required components",
+        "Write system prompt for Abhimanyu Saxena with all required components",
+        "Write system prompt for Kshitij Mishra with all required components"
+      ]
+    },
+    {
+      "id": "F2",
+      "name": "LLM API Integration",
+      "description": "Backend API endpoint to call LLM with persona-specific system prompts",
+      "priority": "critical",
+      "type": "backend",
+      "tasks": [
+        "Set up API route with environment variable for API key (use packages/env)",
+        "Implement chat API using @ai-sdk/google",
+        "Pass correct system prompt based on selected persona",
+        "Handle API errors gracefully with user-friendly messages"
+      ]
+    },
+    {
+      "id": "F3",
+      "name": "Chat Interface",
+      "description": "Frontend chat UI with message display and input",
+      "priority": "critical",
+      "type": "frontend",
+      "tasks": [
+        "Create chat message list component",
+        "Create message input component",
+        "Display user and bot messages with distinct styling",
+        "Auto-scroll to latest message"
+      ]
+    },
+    {
+      "id": "F4",
+      "name": "Persona Switcher",
+      "description": "UI to switch between three personas with conversation reset",
+      "priority": "critical",
+      "type": "frontend",
+      "tasks": [
+        "Create persona selector (tabs or buttons)",
+        "Show active persona clearly in UI",
+        "Reset conversation when persona switches",
+        "Load correct system prompt on switch"
+      ]
+    },
+    {
+      "id": "F5",
+      "name": "Suggestion Chips",
+      "description": "Quick-start questions displayed per persona",
+      "priority": "high",
+      "type": "frontend",
+      "tasks": [
+        "Define suggestion chips for each persona",
+        "Display chips below persona selector",
+        "Click chip to populate input and send message"
+      ]
+    },
+    {
+      "id": "F6",
+      "name": "Typing Indicator",
+      "description": "Visual feedback while API call is in progress",
+      "priority": "high",
+      "type": "frontend",
+      "tasks": [
+        "Show typing indicator during API call",
+        "Hide indicator when response received",
+        "Handle error state display"
+      ]
+    },
+    {
+      "id": "F7",
+      "name": "Mobile Responsiveness",
+      "description": "Ensure app works on mobile and desktop",
+      "priority": "high",
+      "type": "frontend",
+      "tasks": [
+        "Make chat interface responsive",
+        "Ensure persona selector works on mobile",
+        "Test touch interactions"
+      ]
+    },
+    {
+      "id": "F8",
+      "name": "Environment Configuration",
+      "description": "Set up environment variables for API key management",
+      "priority": "critical",
+      "type": "infrastructure",
+      "tasks": [
+        "Check existing packages/env for environment variable setup",
+        "Add GOOGLE_API_KEY to .env.example if not present",
+        "Ensure no API keys are hardcoded in source",
+        "Document setup in README"
+      ]
+    }
+  ],
+  "techStack": {
+    "frontend": "Next.js + React + Tailwind CSS + @ai-sdk/react",
+    "backend": "Next.js API Routes + oRPC",
+    "llm": "Google AI SDK (@ai-sdk/google)",
+    "packageManager": "Bun",
+    "monorepo": "Turborepo",
+    "packages": {
+      "web": "apps/web - Main Next.js application",
+      "api": "packages/api - Backend with oRPC",
+      "ui": "packages/ui - UI components",
+      "env": "packages/env - Environment variables",
+      "db": "packages/db - Database"
+    }
+  },
+  "milestones": [
+    {
+      "name": "MVP Complete",
+      "features": ["F1", "F2", "F3", "F4", "F8"],
+      "description": "Working chatbot with persona switching and API integration"
+    },
+    {
+      "name": "Enhanced UX",
+      "features": ["F5", "F6", "F7"],
+      "description": "Suggestion chips, typing indicator, and mobile responsiveness"
+    }
+  ]
+}

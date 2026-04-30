@@ -1,0 +1,31 @@
+// Better-T-Stack
+//
+// Website: https://www.better-t-stack.dev/
+// Stack Builder: https://www.better-t-stack.dev/new
+// Analytics: https://www.better-t-stack.dev/analytics
+// Showcase: https://www.better-t-stack.dev/showcase
+// Sponsor: https://github.com/sponsors/AmanVarshney01
+//
+// Add new addons with: bun create better-t-stack add
+// This file is safe to delete
+
+{
+  "$schema": "https://r2.better-t-stack.dev/schema.json",
+  "version": "3.27.5",
+  "createdAt": "2026-04-30T08:42:19.231Z",
+  "reproducibleCommand": "bun create better-t-stack@latest persona-chat --frontend next --backend self --runtime none --database postgres --orm drizzle --api orpc --auth none --payments none --addons biome lefthook mcp pwa skills turborepo ultracite --examples ai --db-setup none --web-deploy none --server-deploy none --git --package-manager bun --no-install",
+  "database": "postgres",
+  "orm": "drizzle",
+  "backend": "self",
+  "runtime": "none",
+  "frontend": ["next"],
+  "addons": ["biome", "lefthook", "mcp", "pwa", "skills", "turborepo", "ultracite"],
+  "examples": ["ai"],
+  "auth": "none",
+  "payments": "none",
+  "packageManager": "bun",
+  "dbSetup": "none",
+  "api": "orpc",
+  "webDeploy": "none",
+  "serverDeploy": "none",
+}

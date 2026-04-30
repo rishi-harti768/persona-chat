@@ -44,6 +44,24 @@ bun run dev
 
 Open [http://localhost:3001](http://localhost:3001) in your browser to see the fullstack application.
 
+## Environment
+
+For the web app, copy `apps/web/.env.example` to `apps/web/.env.local` and set your values there.
+
+Required variables:
+
+- `DATABASE_URL`
+- `GOOGLE_API_KEY`
+
+## Assignment Docs
+
+- `prompts.md` — annotated persona prompts
+- `reflection.md` — assignment reflection
+
+## Deployment
+
+Add your live deployed URL here before submission.
+
 ## UI Customization
 
 React web apps in this stack share shadcn/ui primitives through `packages/ui`.

@@ -16,8 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "persona-chat",
-	description: "persona-chat",
+	title: "Persona Chat",
+	description:
+		"Chat with distinct Scaler-inspired personas in a streaming AI interface.",
 };
 
 export default function RootLayout({
